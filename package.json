@@ -1,0 +1,22 @@
+{
+  "name": "accessible-doc-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "child_process": "^1.0.2",
+    "express": "^5.1.0",
+    "handlebars": "^4.7.8",
+    "multer": "^2.0.2",
+    "pa11y": "^9.0.1",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^24.29.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

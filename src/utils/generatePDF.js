@@ -1,0 +1,164 @@
+import puppeteer from "puppeteer";
+import hbs from "handlebars";
+import fs from "fs/promises";
+import path from "path";
+import { addMetadata } from "./addMetadata.js";
+
+// zarejestruj helper do inkrementacji indeksu (używany w szablonie jako {{inc @index}})
+hbs.registerHelper("inc", function (value) {
+  return Number(value) + 1;
+});
+
+export async function generatePDF(templateName, data) {
+  const templatePath = path.resolve(`src/templates/${templateName}.hbs`);
+  const source = await fs.readFile(templatePath, "utf-8");
+  const template = hbs.compile(source);
+  const html = template(data);
+
+  const htmlPath = `src/output/template.html`;
+  await fs.writeFile(htmlPath, html, "utf-8");
+  console.log("HTML zapisany do:", htmlPath);
+
+  const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/chromium-browser",
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--enable-pdf-tags"]
+  });
+
+  const page = await browser.newPage();
+
+  // Dodaj handler dla znaczników dostępności
+  await page.evaluateOnNewDocument(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          document.querySelectorAll('.sr-only, .list-marker').forEach(el => {
+            el.setAttribute('role', 'presentation');
+          });
+          document.querySelectorAll('a').forEach(link => {
+            if (!link.getAttribute('aria-label')) {
+              link.setAttribute('aria-label', link.textContent.trim());
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  });
+
+  await page.setContent(html, { waitUntil: "networkidle0" });
+
+  await page.evaluate(async () => {
+    const imgs = Array.from(document.images);
+    await Promise.all(imgs.map(img => {
+      if (img.complete) return;
+      return new Promise(resolve => { img.onload = img.onerror = resolve; });
+    }));
+  });
+
+  const pdfPath = `src/output/test_report.pdf`;
+  const pdfOptions = {
+    path: pdfPath,
+    format: "A4",
+    preferCSSPageSize: true,
+    printBackground: true,
+    displayHeaderFooter: false,
+    headerTemplate: `
+    <div style="font-size:10px; text-align:center; width:100%; padding-top:5px;">
+      <span>${data.title || "Dokument PDF"} — Strona <span class="pageNumber"></span> z <span class="totalPages"></span></span>
+    </div>`,
+    footerTemplate: `
+    <div style="font-size:10px; text-align:center; width:100%; padding-bottom:5px;">
+      <span>Wygenerowano automatycznie</span>
+    </div>`,
+    margin: {
+      top: "80px",
+      bottom: "60px",
+      left: "40px",
+      right: "40px"
+    },
+    tagged: true,
+    pdfA: true
+  };
+
+  await page.pdf(pdfOptions);
+  await browser.close();
+
+  await addMetadata(pdfPath, {
+    ...data,
+    pdfua: true,
+    contentType: "Dokument dostępny cyfrowo",
+    tags: ["PDF/UA", "accessible", "tagged"]
+  });
+
+  return pdfPath;
+}
+
+// nowy helper: tworzy przykładowe dane (wcześniej w /generate-test) i wywołuje generatePDF
+export async function generateTestPdf() {
+  const templateName = "accessible-template";
+
+  const sectionsRaw = [
+    {
+      heading: "Wprowadzenie",
+      text: "Celem tego raportu jest przedstawienie procesu generowania oraz weryfikacji dostępności cyfrowej dokumentów PDF.",
+      image: {
+        src: "https://ws-stats.pl/assets/icons/wsStats-icon.ico",
+        alt: "To jest przykładowy obrazek",
+        caption: "Rysunek 1. Przykładowy obrazek"
+      }
+    },
+    {
+      heading: "Tabela postępów projektu",
+      text: "Poniższa tabela prezentuje wyniki zwracana przez skanery dostępności cyfrowej.",
+      table: {
+        caption: "Tabela 1. Wyniki finansowe za Q1-Q4",
+        headers: ["ID", "Nazwa elementu", "PAC", "VERAPDF", "Uwagi"],
+        rows: [
+          ["1", "Strona tytułowa", "Zgodny", "Zgodny", "Brak uwag"],
+          ["2", "Spis treści", "Zgodny", "Zgodny", "Brak "],
+          ["3", "Nagłówki", "Zgodny", "Zgodny", "Brak"],
+          ["4", "Tabele", "Nie zgodny", "Zgodny", "błąd struktury TR - false positive?"],
+          ["5", "Obrazki", "Zgodny", "Zgodny", "BRAK"],
+          ["6", "Listy", "Zgodny", "Zgodny", "BRAK"],
+        ]
+      }
+    },
+    {
+      heading: "Wnioski i rekomendacje",
+      text: "Projekt okazał się wyzwaniem, związanym z ograniczeniami narzędzi do tworzenia dokumentów.",
+      list: {
+        title: "Najważniejsze wnioski",
+        items: [
+          "Nie istnieje jedno gotowe rozwiązanie do tworzenia w pełni dostępnych PDF-ów",
+          "Każde gotowe narzędzie posiada wiele błędów zgłaszanych przez skanery dostępności cyfrowej",
+          "Aktualnie najlepszym rozwiązaniem jest generowanie PDF-ów z HTML/CSS z użyciem Puppeteer",
+          "Niezbędne jest ręczne poprawianie niektórych elementów dokumentu po wygenerowaniu PDF-a (z użyciem pythona pdf-lib)"
+        ]
+      },
+    },
+    {
+      heading: "Podsumowanie",
+      text: "Testowy paragraf zawierający dużą liczbę znaków specjalnych: ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ !@#$%^&*()_+-={}[]|;:'<>,.?/ ~`\\\. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed suscipit lacus orci, vel dictum sem volutpat eu. Integer et bibendum nisl. Pellentesque nec eleifend elit. Nulla nunc massa, ullamcorper nec quam id, viverra cursus mi. Donec dictum lacus in eros euismod, at dapibus augue facilisis. Nam in fermentum tortor. Quisque pharetra nunc non justo pulvinar sagittis. Fusce accumsan erat non egestas viverra. Morbi malesuada rhoncus faucibus. Nulla libero sapien, vehicula non dolor nec, ultricies tincidunt ex. Ut faucibus, nibh eget vulputate ultrices, eros leo commodo nibh, quis cursus quam justo vel libero. Nullam hendrerit neque quis dapibus molestie. Nulla lectus elit, consequat suscipit est quis, aliquet efficitur nulla. Proin eget lorem non dolor rhoncus ornare in ac turpis. Duis vel pulvinar augue, eu feugiat velit. Proin sit amet euismod sapien. In hac habitasse platea dictumst. Aliquam quis mauris in risus feugiat ultrices nec a nulla. Sed dignissim auctor velit, a egestas nibh gravida sit amet. Donec et semper elit. Maecenas orci risus, eleifend sit amet eros vitae, sodales placerat elit. Etiam sit amet nulla quis felis commodo tincidunt vitae quis erat. Pellentesque luctus mi nec massa congue blandit. Morbi mattis felis vel imperdiet rhoncus. Etiam dictum sem nec nisi volutpat, id pulvinar neque volutpat. Cras elit nisl, finibus quis dui quis, venenatis blandit ligula. Nullam aliquam tortor auctor leo consequat, commodo molestie ex convallis. Sed efficitur velit ac ipsum semper tincidunt. Sed pharetra tristique orci, id mattis dui aliquet vitae. Ut convallis erat in auctor porttitor. Praesent congue lectus ex, ut lobortis tellus pulvinar eleifend. Ut ac efficitur nibh. Mauris at neque semper, maximus velit ut, sagittis mi. Aenean quis semper urna. Curabitur ac orci non velit congue iaculis. Vestibulum mattis est nec rhoncus laoreet. Aliquam commodo, sapien facilisis convallis sodales, nibh nisi posuere ligula, ut luctus velit arcu vitae metus. Integer at purus purus. Vestibulum finibus vitae risus sed finibus. In hac habitasse platea dictumst. Phasellus odio neque, porta nec metus quis, imperdiet pharetra turpis. Suspendisse porttitor odio et est bibendum, eget ornare sapien accumsan. Phasellus varius sapien mi, eu facilisis velit scelerisque vel. Vivamus in ligula non metus congue pretium vitae vitae justo. Morbi vel ante congue, euismod orci ut, eleifend ligula. Aliquam eros mauris, tincidunt et enim id, sodales aliquam purus. Nam nec elementum dui. Sed nulla metus, ultricies vitae magna sed, aliquam lacinia magna. Fusce volutpat massa vel nibh hendrerit, sed efficitur sapien malesuada. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean ut ex diam. Maecenas lacus erat, vehicula et condimentum nec, placerat non erat. Vivamus feugiat non leo in dictum. Vestibulum non eros nunc. Duis in feugiat nulla, quis efficitur eros. Mauris sed lorem a lorem scelerisque ullamcorper sit amet nec augue."
+    }
+  ];
+
+  const sections = sectionsRaw.map((section, index) => ({
+    ...section,
+    pageNumber: index + 1
+  }));
+
+  const data = {
+    title: "Raport dostępności cyfrowej PDF",
+    author: "Anna Nowak",
+    created_at: "2025-11-07",
+    year: "2025",
+    description: "Szczegółowy raport o postępach projektu.",
+    sections: sections
+  };
+
+  return await generatePDF(templateName, data);
+}
