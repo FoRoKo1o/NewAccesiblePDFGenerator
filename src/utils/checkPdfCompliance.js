@@ -26,5 +26,4 @@ export const checkPdfCompliance = (pdfPath) => {
       reject(`Failed to parse veraPDF output: ${e.message}`);
     }
   });
-});
 };
