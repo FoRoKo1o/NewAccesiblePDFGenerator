@@ -4,21 +4,36 @@ import path from "path";
 export const checkPdfCompliance = (pdfPath) => {
   return new Promise((resolve, reject) => {
     const absPath = path.resolve(pdfPath);
-    const command = `sudo /usr/local/bin/verapdf -f ua1 --format json "${absPath}"`;
+    const command = `/usr/local/bin/verapdf -f ua1 --format json "${absPath}"`;
 
-    exec(command, { env: { ...process.env, HOME: "/home/ubuntu" } }, (err, stdout, stderr) => {
-      if (err) {
-        console.error("veraPDF error:", stderr || err.message);
-        reject(`Command failed: ${command}\n${stderr || err.message}`);
-        return;
+    exec(command, { maxBuffer: 1024 * 1024 * 20 }, (err, stdout, stderr) => {
+
+      // ZAWSZE próbuj parsować stdout (veraPDF zwraca JSON nawet gdy exit code = 1)
+      if (stdout && stdout.trim().startsWith("{")) {
+        try {
+          const json = JSON.parse(stdout);
+          return resolve({
+            success: true,          // JSON z walidacji
+            veraPDF: json,
+            exitCode: err ? err.code : 0, // 0 = zgodny, 1 = niezgodny
+          });
+        } catch (e) {
+          return reject({
+            success: false,
+            error: "Failed to parse veraPDF JSON",
+            message: e.message,
+            raw: stdout,
+          });
+        }
       }
 
-      try {
-        const parsed = JSON.parse(stdout);
-        resolve(parsed);
-      } catch (e) {
-        reject(`Failed to parse veraPDF output: ${e.message}`);
-      }
+      // Prawdziwy błąd — brak JSON
+      return reject({
+        success: false,
+        error: "veraPDF execution failed",
+        stderr,
+        exitCode: err ? err.code : "unknown",
+      });
     });
   });
 };
