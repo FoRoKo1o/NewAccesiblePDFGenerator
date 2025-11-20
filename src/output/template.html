@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Raport dostępności cyfrowej PDF</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Szczegółowy raport o postępach projektu.">
+
+    <meta name="author" content="Anna Nowak">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+        }
+
+        .Lbl {
+            -webkit-pdf-tag-type: Lbl;
+            -webkit-pdf-artifact: yes;
+            display: inline-block;
+            width: 1.2em;
+            text-align: left;
+        }
+
+        .LBody {
+            -webkit-pdf-tag-type: LBody;
+        }
+
+        aside {
+            -webkit-pdf-tag-type: Note;
+        }
+
+        h1 {
+            -webkit-pdf-tag-type: H1;
+            color: #2c3e50;
+        }
+
+        h2 {
+            -webkit-pdf-tag-type: H2;
+            color: #2c3e50;
+        }
+
+        h3 {
+            -webkit-pdf-tag-type: H3;
+            color: #2c3e50;
+        }
+
+        h4 {
+            -webkit-pdf-tag-type: H4;
+            color: #2c3e50;
+        }
+
+        header,
+        footer,
+        nav,
+        main,
+        section,
+        article,
+        aside {
+            display: block;
+        }
+
+        header {
+            -webkit-pdf-artifact: yes;
+        }
+
+        footer {
+            -webkit-pdf-artifact: yes;
+        }
+
+        footer p,
+        footer a {
+            -webkit-pdf-tag-type: P;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav li {
+            margin-bottom: 5px;
+        }
+
+        ul {
+            list-style: none;
+            list-style-position: inside;
+            padding-left: 0;
+        }
+
+        li {
+            list-style-type: none;
+        }
+
+        a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        a:hover,
+        a:focus {
+            text-decoration: underline;
+        }
+
+        figure {
+            display: block;
+            width: 100%;
+            min-height: 180px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        figure img {
+            display: block;
+            width: 400px;
+            max-width: 80%;
+            height: auto;
+            min-height: 150px;
+            margin: 0 auto;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        figcaption {
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+            margin-top: 8px;
+            -webkit-pdf-tag-type: Caption;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+            -webkit-pdf-artifact: yes;
+        }
+
+        nav[role="navigation"] {
+            margin-bottom: 40px;
+        }
+
+        nav[role="navigation"] ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        nav[role="navigation"] li {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .TOC-Label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .TOC-Leader {
+            flex-grow: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0 4px;
+            font-size: 0.8em;
+        }
+
+        .TOC-PageNumber {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="doc-title">Raport dostępności cyfrowej PDF</h1>
+
+    <nav role="navigation" aria-label="Spis treści" -webkit-pdf-tag-type="TOC">
+        <h2 -webkit-pdf-tag-type="H2">Spis Treści</h2>
+
+        <div style="display:flex; flex-direction:column; gap:4px;">
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-0" title="Przejdź do sekcji: Wprowadzenie"
+                    aria-label="Przejdź do sekcji: Wprowadzenie" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    Wprowadzenie
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">1</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-1" title="Przejdź do sekcji: Tabela postępów projektu"
+                    aria-label="Przejdź do sekcji: Tabela postępów projektu" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    Tabela postępów projektu
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">2</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-2" title="Przejdź do sekcji: Wnioski i rekomendacje"
+                    aria-label="Przejdź do sekcji: Wnioski i rekomendacje" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    Wnioski i rekomendacje
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">3</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-3" title="Przejdź do sekcji: Podsumowanie"
+                    aria-label="Przejdź do sekcji: Podsumowanie" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    Podsumowanie
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">4</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-4" title="Przejdź do sekcji: test"
+                    aria-label="Przejdź do sekcji: test" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    test
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">5</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-5" title="Przejdź do sekcji: test"
+                    aria-label="Przejdź do sekcji: test" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    test
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">6</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-6" title="Przejdź do sekcji: test"
+                    aria-label="Przejdź do sekcji: test" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    test
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">7</span>
+            </p>
+            <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
+                <!--
+        - title => pomaga wstawieniu Contents w anotacji
+        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
+        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
+      -->
+                <a href="#section-7" title="Przejdź do sekcji: test"
+                    aria-label="Przejdź do sekcji: test" -webkit-pdf-tag-type="Link"
+                    style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
+                    test
+                </a>
+
+                <!-- numer strony jako oddzielny element (nie artefakt) -->
+                <span style="float:right; width:40px; text-align:right; display:inline-block;">8</span>
+            </p>
+        </div>
+    </nav>
+
+
+    <hr>
+
+    <main role="main" aria-labelledby="main-title">
+        <h2 id="main-title" class="sr-only">Treść dokumentu</h2>
+
+        <section id="section-0" role="region" aria-labelledby="heading-0">
+            <h2 id="heading-0">Wprowadzenie</h2>
+            <p>Celem tego raportu jest przedstawienie procesu generowania oraz weryfikacji dostępności cyfrowej dokumentów PDF.</p>
+
+            <figure role="group" aria-labelledby="figcaption-0" style="min-height:200px;">
+                <img src="https://ws-stats.pl/assets/icons/wsStats-icon.ico" alt="To jest przykładowy obrazek" role="img" aria-describedby="figcaption-0"
+                    style="width:400px; min-height:150px;">
+                <figcaption id="figcaption-0">Rysunek 1. Przykładowy obrazek</figcaption>
+            </figure>
+
+
+
+
+
+        </section>
+        <section id="section-1" role="region" aria-labelledby="heading-1">
+            <h2 id="heading-1">Tabela postępów projektu</h2>
+            <p>Poniższa tabela prezentuje wyniki zwracana przez skanery dostępności cyfrowej.</p>
+
+
+            <table role="table" aria-label="Tabela 1. Wyniki finansowe za Q1-Q4">
+                <caption>Tabela 1. Wyniki finansowe za Q1-Q4</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th><th scope="col">Nazwa elementu</th><th scope="col">PAC</th><th scope="col">VERAPDF</th><th scope="col">Uwagi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td><td>Strona tytułowa</td><td>Zgodny</td><td>Zgodny</td><td>Brak uwag</td>
+                    </tr>
+                    <tr>
+                        <td>2</td><td>Spis treści</td><td>Zgodny</td><td>Zgodny</td><td>Brak </td>
+                    </tr>
+                    <tr>
+                        <td>3</td><td>Nagłówki</td><td>Zgodny</td><td>Zgodny</td><td>Brak</td>
+                    </tr>
+                    <tr>
+                        <td>4</td><td>Tabele</td><td>Nie zgodny</td><td>Zgodny</td><td>błąd struktury TR - false positive?</td>
+                    </tr>
+                    <tr>
+                        <td>5</td><td>Obrazki</td><td>Zgodny</td><td>Zgodny</td><td>BRAK</td>
+                    </tr>
+                    <tr>
+                        <td>6</td><td>Listy</td><td>Zgodny</td><td>Zgodny</td><td>BRAK</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>X</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td><td>Placeholder</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+
+
+        </section>
+        <section id="section-2" role="region" aria-labelledby="heading-2">
+            <h2 id="heading-2">Wnioski i rekomendacje</h2>
+            <p>Projekt okazał się wyzwaniem, związanym z ograniczeniami narzędzi do tworzenia dokumentów.</p>
+
+
+
+            <div role="region" aria-labelledby="list-heading-2">
+                <h3 id="list-heading-2">Najważniejsze wnioski</h3>
+                <ul -webkit-pdf-tag-type="L">
+                    <li -webkit-pdf-tag-type="LI">
+                        <span class="Lbl">&#x2022;&nbsp;</span><span class="LBody">Nie istnieje jedno gotowe rozwiązanie do tworzenia w pełni dostępnych PDF-ów</span>
+                    </li>
+                    <li -webkit-pdf-tag-type="LI">
+                        <span class="Lbl">&#x2022;&nbsp;</span><span class="LBody">Każde gotowe narzędzie posiada wiele błędów zgłaszanych przez skanery dostępności cyfrowej</span>
+                    </li>
+                    <li -webkit-pdf-tag-type="LI">
+                        <span class="Lbl">&#x2022;&nbsp;</span><span class="LBody">Aktualnie najlepszym rozwiązaniem jest generowanie PDF-ów z HTML/CSS z użyciem Puppeteer</span>
+                    </li>
+                    <li -webkit-pdf-tag-type="LI">
+                        <span class="Lbl">&#x2022;&nbsp;</span><span class="LBody">Niezbędne jest ręczne poprawianie niektórych elementów dokumentu po wygenerowaniu PDF-a (z użyciem pythona pdf-lib)</span>
+                    </li>
+                </ul>
+            </div>
+
+
+
+        </section>
+        <section id="section-3" role="region" aria-labelledby="heading-3">
+            <h2 id="heading-3">Podsumowanie</h2>
+            <p>Testowy paragraf zawierający dużą liczbę znaków specjalnych: ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ !@#$%^&amp;*()_+-&#x3D;{}[]|;:&#x27;&lt;&gt;,.?/ ~&#x60;\. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed suscipit lacus orci, vel dictum sem volutpat eu. Integer et bibendum nisl. Pellentesque nec eleifend elit. Nulla nunc massa, ullamcorper nec quam id, viverra cursus mi. Donec dictum lacus in eros euismod, at dapibus augue facilisis. Nam in fermentum tortor. Quisque pharetra nunc non justo pulvinar sagittis. Fusce accumsan erat non egestas viverra. Morbi malesuada rhoncus faucibus. Nulla libero sapien, vehicula non dolor nec, ultricies tincidunt ex. Ut faucibus, nibh eget vulputate ultrices, eros leo commodo nibh, quis cursus quam justo vel libero. Nullam hendrerit neque quis dapibus molestie. Nulla lectus elit, consequat suscipit est quis, aliquet efficitur nulla. Proin eget lorem non dolor rhoncus ornare in ac turpis. Duis vel pulvinar augue, eu feugiat velit. Proin sit amet euismod sapien. In hac habitasse platea dictumst. Aliquam quis mauris in risus feugiat ultrices nec a nulla. Sed dignissim auctor velit, a egestas nibh gravida sit amet. Donec et semper elit. Maecenas orci risus, eleifend sit amet eros vitae, sodales placerat elit. Etiam sit amet nulla quis felis commodo tincidunt vitae quis erat. Pellentesque luctus mi nec massa congue blandit. Morbi mattis felis vel imperdiet rhoncus. Etiam dictum sem nec nisi volutpat, id pulvinar neque volutpat. Cras elit nisl, finibus quis dui quis, venenatis blandit ligula. Nullam aliquam tortor auctor leo consequat, commodo molestie ex convallis. Sed efficitur velit ac ipsum semper tincidunt. Sed pharetra tristique orci, id mattis dui aliquet vitae. Ut convallis erat in auctor porttitor. Praesent congue lectus ex, ut lobortis tellus pulvinar eleifend. Ut ac efficitur nibh. Mauris at neque semper, maximus velit ut, sagittis mi. Aenean quis semper urna. Curabitur ac orci non velit congue iaculis. Vestibulum mattis est nec rhoncus laoreet. Aliquam commodo, sapien facilisis convallis sodales, nibh nisi posuere ligula, ut luctus velit arcu vitae metus. Integer at purus purus. Vestibulum finibus vitae risus sed finibus. In hac habitasse platea dictumst. Phasellus odio neque, porta nec metus quis, imperdiet pharetra turpis. Suspendisse porttitor odio et est bibendum, eget ornare sapien accumsan. Phasellus varius sapien mi, eu facilisis velit scelerisque vel. Vivamus in ligula non metus congue pretium vitae vitae justo. Morbi vel ante congue, euismod orci ut, eleifend ligula. Aliquam eros mauris, tincidunt et enim id, sodales aliquam purus. Nam nec elementum dui. Sed nulla metus, ultricies vitae magna sed, aliquam lacinia magna. Fusce volutpat massa vel nibh hendrerit, sed efficitur sapien malesuada. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean ut ex diam. Maecenas lacus erat, vehicula et condimentum nec, placerat non erat. Vivamus feugiat non leo in dictum. Vestibulum non eros nunc. Duis in feugiat nulla, quis efficitur eros. Mauris sed lorem a lorem scelerisque ullamcorper sit amet nec augue.</p>
+
+
+
+
+
+
+        </section>
+        <section id="section-4" role="region" aria-labelledby="heading-4">
+            <h2 id="heading-4">test</h2>
+            <p>test</p>
+
+
+
+
+
+
+        </section>
+        <section id="section-5" role="region" aria-labelledby="heading-5">
+            <h2 id="heading-5">test</h2>
+            <p>test</p>
+
+
+
+
+
+
+        </section>
+        <section id="section-6" role="region" aria-labelledby="heading-6">
+            <h2 id="heading-6">test</h2>
+            <p>test</p>
+
+
+
+
+
+
+        </section>
+        <section id="section-7" role="region" aria-labelledby="heading-7">
+            <h2 id="heading-7">test</h2>
+            <p>test</p>
+
+
+
+
+
+
+        </section>
+    </main>
+</body>
+
+</html>
