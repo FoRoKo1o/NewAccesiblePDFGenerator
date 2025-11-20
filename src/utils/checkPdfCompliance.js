@@ -6,19 +6,25 @@ export const checkPdfCompliance = (pdfPath) => {
     const absPath = path.resolve(pdfPath);
     const command = `sudo /usr/local/bin/verapdf -f ua1 --format json "${absPath}"`;
 
-    exec(command, { env: { ...process.env, HOME: "/home/ubuntu" } }, (err, stdout, stderr) => {
-      if (err) {
-        console.error("veraPDF error:", stderr || err.message);
-        reject(`Command failed: ${command}\n${stderr || err.message}`);
+    exec(command, { env: process.env }, (err, stdout, stderr) => {
+      if (stdout && stdout.trim().startsWith("{")) {
+        resolve(stdout);
         return;
       }
 
-      try {
-        const parsed = JSON.parse(stdout);
-        resolve(parsed);
-      } catch (e) {
-        reject(`Failed to parse veraPDF output: ${e.message}`);
-      }
+      console.error("veraPDF stdout:", stdout);
+      console.error("veraPDF stderr:", stderr);
+      console.error("veraPDF err:", err);
+
+      reject(`veraPDF failed: ${stderr || err?.message || "Unknown error"}`);
     });
+
+    try {
+      const parsed = JSON.parse(stdout);
+      resolve(parsed);
+    } catch (e) {
+      reject(`Failed to parse veraPDF output: ${e.message}`);
+    }
   });
+});
 };
