@@ -40,11 +40,11 @@ app.get("/generate-test", async (req, res) => {
 
 // hardcoded PDF compliance check
 app.get("/check-test", async (req, res) => {
-  const pdfPath = path.resolve("./src/output/test_report.pdf");
+  const pdfPath = path.resolve("./src/output/test_report_fixed.pdf");
   if (!fs.existsSync(pdfPath)) {
     return res
       .status(404)
-      .json({ status: "error", message: "Plik test_report.pdf nie istnieje - wygeneruj go najpierw." });
+      .json({ status: "error", message: `Plik ${pdfPath} nie istnieje - wygeneruj go najpierw.` });
   }
 
   const report = await checkPdfCompliance(pdfPath);
