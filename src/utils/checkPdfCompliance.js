@@ -6,20 +6,34 @@ export const checkPdfCompliance = (pdfPath) => {
     const absPath = path.resolve(pdfPath);
     const command = `/usr/local/bin/verapdf -f ua1 --format json "${absPath}"`;
 
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        console.error("veraPDF error:", err);
-        console.error("stderr:", stderr);
-        return reject(`veraPDF failed: ${stderr || err.message}`);
+    exec(command, { maxBuffer: 1024 * 1024 * 20 }, (err, stdout, stderr) => {
+
+      // ZAWSZE próbuj parsować stdout (veraPDF zwraca JSON nawet gdy exit code = 1)
+      if (stdout && stdout.trim().startsWith("{")) {
+        try {
+          const json = JSON.parse(stdout);
+          return resolve({
+            success: true,          // JSON z walidacji
+            veraPDF: json,
+            exitCode: err ? err.code : 0, // 0 = zgodny, 1 = niezgodny
+          });
+        } catch (e) {
+          return reject({
+            success: false,
+            error: "Failed to parse veraPDF JSON",
+            message: e.message,
+            raw: stdout,
+          });
+        }
       }
 
-      try {
-        const parsed = JSON.parse(stdout);
-        resolve(parsed);
-      } catch (e) {
-        console.error("veraPDF raw output:", stdout);
-        reject(`Failed to parse veraPDF JSON output: ${e.message}`);
-      }
+      // Prawdziwy błąd — brak JSON
+      return reject({
+        success: false,
+        error: "veraPDF execution failed",
+        stderr,
+        exitCode: err ? err.code : "unknown",
+      });
     });
   });
 };

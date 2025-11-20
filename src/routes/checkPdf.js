@@ -22,18 +22,42 @@ const upload = multer({ storage });
 router.post("/", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ status: "error", message: "Nie przesłano pliku PDF." });
+      return res.status(400).json({
+        status: "error",
+        message: "Nie przesłano pliku PDF."
+      });
     }
 
     const pdfPath = req.file.path;
-    const report = await checkPdfCompliance(pdfPath);
 
+    let report;
+
+    try {
+      // to NIE rzuci wyjątku przy PDF UA niezgodnym — zwróci success: true/false
+      report = await checkPdfCompliance(pdfPath);
+    } catch (e) {
+      // prawdziwy wyjątek (np. brak JSON, błąd programu)
+      report = {
+        success: false,
+        error: e.error || e.message || "veraPDF processing failed",
+        details: e
+      };
+    }
+
+    // usuń plik temp
     await fs.unlink(pdfPath);
 
-    res.json(report);
+    // zwróć raport veraPDF
+    return res.json(report);
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "error", message: err.message });
+    console.error("SERVER ERROR:", err);
+
+    return res.status(500).json({
+      status: "error",
+      message: err.message || "Internal server error",
+      error: err
+    });
   }
 });
 
