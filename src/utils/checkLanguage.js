@@ -38,19 +38,16 @@ export async function checkLanguage(data) {
       text_style: data?.text_style || "urzędowy"
     };
 
-    console.log(JSON.stringify(payload));
-
     const resp = await axios.post(
       "https://api.logios.dev/public/calculate_measures",
       payload,
       {
         headers: {
-          "Content-Type": "application/json" // bez dodatkowego charset
+          "Content-Type": "application/json"
         },
         responseType: "json"
       }
     );
-
     return resp.data;
   } catch (err) {
     if (err.response) {
