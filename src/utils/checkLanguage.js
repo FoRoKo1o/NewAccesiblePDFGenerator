@@ -38,9 +38,11 @@ export async function checkLanguage(data) {
       text_style: data?.text_style || "urzędowy"
     };
 
+    console.log(JSON.stringify(payload));
+
     const resp = await fetch("https://api.logios.dev/public/calculate_measures", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify(payload)
     });
 
