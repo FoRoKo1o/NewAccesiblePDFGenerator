@@ -7,7 +7,6 @@ import { checkHTMLAccessibility } from "./checkHTMLAccessibility.js";
 import { checkPdfCompliance } from "./checkPdfCompliance.js";
 import { checkLanguage } from "./checkLanguage.js";
 
-// zarejestruj helper do inkrementacji indeksu (używany w szablonie jako {{inc @index}})
 hbs.registerHelper("inc", function (value) {
   return Number(value) + 1;
 });
@@ -105,6 +104,7 @@ export async function generatePDF(templateName, data, options) {
     contentType: "Dokument dostępny cyfrowo",
     tags: ["PDF/UA", "accessible", "tagged"]
   });
+
   if (options?.checkHTMLAccessibility) {
     HTMLreport = await checkHTMLAccessibility(templateName, data);
   }
@@ -114,11 +114,10 @@ export async function generatePDF(templateName, data, options) {
   if (options?.checkLanguage) {
     language = await checkLanguage(data);
   }
-  return [pdfPath, HTMLreport, language, pdfAccesibilityCheck];
 
+  return [pdfPath, HTMLreport, language, pdfAccesibilityCheck];
 }
 
-// nowy helper: tworzy przykładowe dane (wcześniej w /generate-test) i wywołuje generatePDF
 export async function generateTestPdf() {
   const templateName = "accessible-template";
 
