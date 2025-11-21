@@ -21,7 +21,8 @@ export async function generatePDF(templateName, data, options) {
   const template = hbs.compile(source);
   const html = template(data);
 
-  const htmlPath = `src/output/template.html`;
+  // const htmlPath = `src/output/template.html`;
+  const htmlPath = `src/output/template_${Date.now()}.html`;
   await fs.writeFile(htmlPath, html, "utf-8");
   // console.log("HTML zapisany do:", htmlPath);
 
@@ -71,7 +72,8 @@ export async function generatePDF(templateName, data, options) {
     }));
   });
 
-  const pdfPath = `src/output/test_report.pdf`;
+  // const pdfPath = `src/output/test_report.pdf`;
+  const pdfPath = `src/output/${templateName}_${Date.now()}.pdf`;
   const pdfOptions = {
     path: pdfPath,
     format: "A4",
