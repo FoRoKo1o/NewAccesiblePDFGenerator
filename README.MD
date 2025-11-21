@@ -1,6 +1,12 @@
-endpoint: `/generate`
-POST /generate
-Przykład wywołania
+# Intro
+This service generates accessible PDF/UA-compliant documents based on structured JSON input.
+It supports images, tables, lists, and accessibility validation through external tools.
+
+## Important
+Python and `pikepdf` is required to generate compliant document. 
+
+## Example
+`POST /generate`
 ```
 curl -X POST http://localhost:3000/generate \
   -H "Content-Type: application/json" \
@@ -24,7 +30,16 @@ curl -X POST http://localhost:3000/generate \
     }
   }'
   ```
-# heading
+
+# Sections
+Each section can contain:
+- a heading
+- text
+- optional image
+- optional table
+- optional list
+
+## Heading
 ```
 {
   "heading": "Podsumowanie",
@@ -32,7 +47,7 @@ curl -X POST http://localhost:3000/generate \
 }
 
 ```
-# Img
+## Img
 ```
 {
     "heading": "Wprowadzenie",
@@ -44,7 +59,7 @@ curl -X POST http://localhost:3000/generate \
     }
 }
 ```
-# Table
+## Table
 ```
 {
   "heading": "Table heading",
@@ -60,7 +75,7 @@ curl -X POST http://localhost:3000/generate \
   }
 }
 ```
-# list
+## List
 ```
 {
   "heading": "qwe",
@@ -76,7 +91,7 @@ curl -X POST http://localhost:3000/generate \
 }
 ```
 
-# API response
+## API response
 ```{
   "success": true,
   "pdfBase64": "<BASE64_PDF>",
@@ -85,4 +100,17 @@ curl -X POST http://localhost:3000/generate \
     "pdf": { ... },
     "language": { ... }
   }
-}```
+}
+```
+Fields:
+- `pdfBase64` – generated PDF in Base64 format
+- `reports.html` – HTML accessibility scan results
+- `reports.pdf` – PDF/UA compliance results (veraPDF)
+- `reports.language` – language detection results
+
+# External doc
+- [Logios API doc](https://logios.dev/wp-content/uploads/2024/02/logios-api.pdf) - checkLanguage.js
+- [VeraPDF doc](https://docs.verapdf.org/) - checkPdfCompliance.js
+- [Pa11y](https://pa11y.org/) - checkHTMLAccessibility.js
+- [pikepdf](https://pypi.org/project/pikepdf/) - fixing Puppeter limitations
+- Puppeter - PDF generaton process
