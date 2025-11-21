@@ -1,10 +1,9 @@
-import path from "path";
+import fetch from "node-fetch";
 
 export async function checkLanguage(data) {
   try {
     const texts = [];
 
-    // Funkcja rekurencyjna do zbierania tylko czystych stringów
     const collectText = (value) => {
       if (!value && value !== "") return;
 
@@ -23,7 +22,6 @@ export async function checkLanguage(data) {
 
       if (typeof value === "object") {
         for (const k of Object.keys(value)) {
-          // ignorujemy pola typu obrazki/tabele
           if (["image", "table", "caption", "alt"].includes(k)) continue;
           collectText(value[k]);
         }
@@ -40,13 +38,7 @@ export async function checkLanguage(data) {
       text_style: data?.text_style || "urzędowy"
     };
 
-    let _fetch = (typeof fetch !== "undefined") ? fetch : null;
-    if (!_fetch) {
-      const nf = await import("node-fetch");
-      _fetch = nf.default;
-    }
-
-    const resp = await _fetch("https://api.logios.dev/public/calculate_measures", {
+    const resp = await fetch("https://api.logios.dev/public/calculate_measures", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
