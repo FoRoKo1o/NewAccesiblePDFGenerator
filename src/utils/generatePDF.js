@@ -3,25 +3,38 @@ import hbs from "handlebars";
 import fs from "fs/promises";
 import path from "path";
 import { addMetadata } from "./addMetadata.js";
+import { checkHTMLAccessibility } from "./checkHTMLAccessibility.js";
+import { checkPdfCompliance } from "./checkPdfCompliance.js";
+import { checkLanguage } from "./checkLanguage.js";
+import { fixAnnotations } from "./fixAnnotations.js";
 
-// zarejestruj helper do inkrementacji indeksu (używany w szablonie jako {{inc @index}})
 hbs.registerHelper("inc", function (value) {
   return Number(value) + 1;
 });
 
-export async function generatePDF(templateName, data) {
+export async function generatePDF(templateName, data, options) {
+  let HTMLreport = null;
+  let language = null;
+  let pdfAccesibilityCheck = null;
   const templatePath = path.resolve(`src/templates/${templateName}.hbs`);
   const source = await fs.readFile(templatePath, "utf-8");
   const template = hbs.compile(source);
   const html = template(data);
 
-  const htmlPath = `src/output/template.html`;
+  // const htmlPath = `src/output/template.html`;
+  const htmlPath = `src/output/template_${Date.now()}.html`;
   await fs.writeFile(htmlPath, html, "utf-8");
-  console.log("HTML zapisany do:", htmlPath);
+  // console.log("HTML zapisany do:", htmlPath);
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--enable-pdf-tags"]
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--enable-pdf-tags"
+    ]
   });
 
   const page = await browser.newPage();
@@ -59,7 +72,8 @@ export async function generatePDF(templateName, data) {
     }));
   });
 
-  const pdfPath = `src/output/test_report.pdf`;
+  // const pdfPath = `src/output/test_report.pdf`;
+  const pdfPath = `src/output/${templateName}_${Date.now()}.pdf`;
   const pdfOptions = {
     path: pdfPath,
     format: "A4",
@@ -94,10 +108,22 @@ export async function generatePDF(templateName, data) {
     tags: ["PDF/UA", "accessible", "tagged"]
   });
 
-  return pdfPath;
+  const fixedPath = pdfPath.replace(".pdf", "_fixed.pdf");
+  await fixAnnotations(pdfPath, fixedPath);
+
+  if (options?.checkHTMLAccessibility) {
+    HTMLreport = await checkHTMLAccessibility(templateName, data);
+  }
+  if (options?.checkPDFAccessibility) {
+    pdfAccesibilityCheck = await checkPdfCompliance(fixedPath);
+  }
+  if (options?.checkLanguage) {
+    language = await checkLanguage(data);
+  }
+
+  return [fixedPath, HTMLreport, language, pdfAccesibilityCheck];
 }
 
-// nowy helper: tworzy przykładowe dane (wcześniej w /generate-test) i wywołuje generatePDF
 export async function generateTestPdf() {
   const templateName = "accessible-template";
 
@@ -188,6 +214,11 @@ export async function generateTestPdf() {
     description: "Szczegółowy raport o postępach projektu.",
     sections: sections
   };
+  const options = {
+    checkHTMLAccessibility: true,
+    checkLanguage: true,
+    checkPDFAccessibility: true
+  };
 
-  return await generatePDF(templateName, data);
+  return await generatePDF(templateName, data, options);
 }

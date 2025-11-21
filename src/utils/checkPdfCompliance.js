@@ -2,6 +2,7 @@ import { exec } from "child_process";
 import path from "path";
 
 export const checkPdfCompliance = (pdfPath) => {
+  // console.log(`Checking PDF compliance for: ${pdfPath}`);
   return new Promise((resolve, reject) => {
     const absPath = path.resolve(pdfPath);
     const command = `/usr/local/bin/verapdf -f ua1 --format json "${absPath}"`;
@@ -13,9 +14,9 @@ export const checkPdfCompliance = (pdfPath) => {
         try {
           const json = JSON.parse(stdout);
           return resolve({
-            success: true,          // JSON z walidacji
+            success: true,          
             veraPDF: json,
-            exitCode: err ? err.code : 0, // 0 = zgodny, 1 = niezgodny
+            exitCode: err ? err.code : 0,
           });
         } catch (e) {
           return reject({
@@ -27,7 +28,6 @@ export const checkPdfCompliance = (pdfPath) => {
         }
       }
 
-      // Prawdziwy błąd — brak JSON
       return reject({
         success: false,
         error: "veraPDF execution failed",
