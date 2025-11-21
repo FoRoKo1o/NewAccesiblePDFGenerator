@@ -3,9 +3,23 @@ This service generates accessible PDF/UA-compliant documents based on structured
 It supports images, tables, lists, and accessibility validation through external tools.
 
 ## Important
-Python and `pikepdf` is required to generate compliant document. 
+1. Python and `pikepdf` is required to generate compliant document. 
+1. `--insecure-http-parser` launch option is enabled due to logios API Folded Headers
 
-## Example
+
+# Examples
+## Example data
+### PDF generation process
+`curl localhost:3000/generate-test`
+
+The API returns the PDF in the response, and additionally saves it as:
+/src/output/{templateName}_{GenerationDate}_fixed.pdf
+### Pdf compliance validation
+1. Place your PDF file at:
+`/src/output/test_report_fixed.pdf`
+1. Then run: `curl localhost:3000/check-test`
+
+## Send custom data
 `POST /generate`
 ```
 curl -X POST http://localhost:3000/generate \
