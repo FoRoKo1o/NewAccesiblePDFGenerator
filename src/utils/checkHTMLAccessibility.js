@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 
 export async function checkHTMLAccessibility(templateName, data) {
-  console.log(`Checking accessibility for template: ${templateName}`);
+  // console.log(`Checking accessibility for template: ${templateName}`);
   const templatePath = path.resolve(`src/templates/${templateName}.hbs`);
   const source = await fs.readFile(templatePath, "utf-8");
   const template = hbs.compile(source);

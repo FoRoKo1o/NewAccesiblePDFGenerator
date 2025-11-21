@@ -1,7 +1,7 @@
 import path from "path";
 
 export async function checkLanguage(data) {
-  console.log(`checkLanguage ${data}`);
+  // console.log(`checkLanguage ${data}`);
   try {
     const texts = [];
 

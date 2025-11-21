@@ -6,7 +6,7 @@ import { addMetadata } from "./addMetadata.js";
 import { checkHTMLAccessibility } from "./checkHTMLAccessibility.js";
 import { checkPdfCompliance } from "./checkPdfCompliance.js";
 import { checkLanguage } from "./checkLanguage.js";
-import { fixAnnotations } from "./utils/fixAnnotations.js";
+import { fixAnnotations } from "./fixAnnotations.js";
 
 hbs.registerHelper("inc", function (value) {
   return Number(value) + 1;
