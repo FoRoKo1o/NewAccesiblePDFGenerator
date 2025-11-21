@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import generateRoute from "./routes/generate.js";
 import checkPdf from "./routes/checkPdf.js";
+import builderRoute from "./routes/buider.js";
 import fs from "fs";
 import path from "path";
 import { checkPdfCompliance } from "./utils/checkPdfCompliance.js";
@@ -12,6 +13,8 @@ app.use(bodyParser.json());
 
 app.use("/generate", generateRoute);
 app.use("/check-pdf", checkPdf);
+app.use("/builder", builderRoute);
+app.use(express.static("public"));
 
 // REMOVE THIS
 // hardcoded PDF generation and annotation fixing

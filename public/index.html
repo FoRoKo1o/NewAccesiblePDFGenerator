@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Builder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="top-inputs">
+        <label>Tytuł dokumentu:</label>
+        <input id="doc-title" type="text">
+
+        <label>Autor:</label>
+        <input id="doc-author" type="text">
+    </div>
+
+    <div class="builder-wrapper">
+
+        <!-- Główny kontener komponentów -->
+        <div id="components-container"></div>
+    </div>
+
+    <!-- PRZYCISK GENERUJ PDF -->
+    <div class="buttons-panel">
+        <button class="add-btn" data-type="heading">Dodaj nagłówek</button>
+        <button class="add-btn" data-type="paragraph">Dodaj tekst</button>
+        <button class="add-btn" data-type="list">Dodaj listę</button>
+        <button class="add-btn" data-type="table">Dodaj tabelę</button>
+        <button class="add-btn" data-type="image">Dodaj obrazek</button>
+    </div>
+
+    <button id="generateBtn" class="generate-btn">Generuj PDF</button>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+        <div class="modal-box">
+            <span id="modal-close" class="modal-close">&times;</span>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
