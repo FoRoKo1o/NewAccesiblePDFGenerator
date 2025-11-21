@@ -1,36 +1,43 @@
 import path from "path";
 
 export async function checkLanguage(data) {
-  // console.log(`checkLanguage ${data}`);
   try {
     const texts = [];
 
-    const collect = (value) => {
+    // Funkcja rekurencyjna do zbierania tylko czystych stringów
+    const collectText = (value) => {
       if (!value && value !== "") return;
+
       if (typeof value === "string") {
         const s = value.trim();
-        if (s) texts.push(s);
+        if (s && s.length > 5 && /[a-zA-Ząćęłńóśźż]/i.test(s)) {
+          texts.push(s);
+        }
         return;
       }
+
       if (Array.isArray(value)) {
-        value.forEach(collect);
+        value.forEach(collectText);
         return;
       }
+
       if (typeof value === "object") {
         for (const k of Object.keys(value)) {
-          collect(value[k]);
+          // ignorujemy pola typu obrazki/tabele
+          if (["image", "table", "caption", "alt"].includes(k)) continue;
+          collectText(value[k]);
         }
       }
     };
 
-    collect(data);
+    collectText(data);
 
     const text_str = texts.join("\n\n").slice(0, 100000);
 
     const payload = {
       text_str,
-      text_type: (data && data.text_type) || "pismo",
-      text_style: (data && data.text_style) || "urzędowy"
+      text_type: data?.text_type || "pismo",
+      text_style: data?.text_style || "urzędowy"
     };
 
     let _fetch = (typeof fetch !== "undefined") ? fetch : null;
