@@ -1,7 +1,6 @@
 import express from "express";
 import fs from "fs";
 import { generatePDF } from "../utils/generatePDF.js";
-import { fixAnnotations } from "../utils/fixAnnotations.js";
 
 const router = express.Router();
 
