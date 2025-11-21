@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   try {
-    const { template, data } = req.body;
+    const { template, data, options } = req.body;
 
     // Validacja
     if (!template || !data) {
@@ -17,22 +17,17 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Generuj PDF z weryfikacją
-    const options = {
-      checkHTMLAccessibility: true,
-      checkLanguage: true,
-      checkPDFAccessibility: true
+    const finalOptions = {
+      checkHTMLAccessibility: options?.checkHTMLAccessibility ?? false,
+      checkLanguage: options?.checkLanguage ?? false,
+      checkPDFAccessibility: options?.checkPDFAccessibility ?? false
     };
 
-    const [pdfPath, HTMLreport, language, pdfAccesibilityCheck] = await generatePDF(
+    const [fixedPath, HTMLreport, language, pdfAccesibilityCheck] = await generatePDF(
       template,
       data,
-      options
+      finalOptions
     );
-
-    // Napraw anotacje
-    const fixedPath = pdfPath.replace(".pdf", "_fixed.pdf");
-    await fixAnnotations(pdfPath, fixedPath);
 
     // Zakoduj PDF na base64
     const pdfBuffer = fs.readFileSync(fixedPath);
