@@ -5,9 +5,8 @@ import checkPdf from "./routes/checkPdf.js";
 import fs from "fs";
 import path from "path";
 import { checkPdfCompliance } from "./utils/checkPdfCompliance.js";
-import { generatePDF, generateTestPdf } from "./utils/generatePDF.js";
+import { generateTestPdf } from "./utils/generatePDF.js";
 import { fixAnnotations } from "./utils/fixAnnotations.js";
-
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,20 +14,27 @@ app.use(bodyParser.json());
 app.use("/generate", generateRoute);
 app.use("/check-pdf", checkPdf);
 
-
+// REMOVE THIS
 // hardcoded PDF generation and annotation fixing
 app.get("/generate-test", async (req, res) => {
   try {
-    const pdfPath = await generateTestPdf();
+    const [pdfPath, HTMLreport, language, pdfAccesibilityCheck] = await generateTestPdf();
     const fixedPath = pdfPath.replace(".pdf", "_fixed.pdf");
 
     await fixAnnotations(pdfPath, fixedPath);
 
+    const pdfBuffer = fs.readFileSync(fixedPath);
+    const pdfBase64 = pdfBuffer.toString("base64");
+
     return res.json({
       status: "success",
       message: "PDF wygenerowany",
-      path: fixedPath
+      pdfBase64,
+      htmlReport: HTMLreport,
+      languageCheck: language,
+      pdfAccesibilityCheck: pdfAccesibilityCheck
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -38,6 +44,8 @@ app.get("/generate-test", async (req, res) => {
   }
 });
 
+
+// REMOVE THIS
 // hardcoded PDF compliance check
 app.get("/check-test", async (req, res) => {
   const pdfPath = path.resolve("./src/output/test_report_fixed.pdf");
@@ -50,7 +58,6 @@ app.get("/check-test", async (req, res) => {
   const report = await checkPdfCompliance(pdfPath);
   res.json(report);
 });
-
 
 app.listen(3000, "127.0.0.1", () =>
   console.log("✅ Local test server running on http://127.0.0.1:3000")

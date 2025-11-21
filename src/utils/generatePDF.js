@@ -3,13 +3,19 @@ import hbs from "handlebars";
 import fs from "fs/promises";
 import path from "path";
 import { addMetadata } from "./addMetadata.js";
+import { checkHTMLAccessibility } from "./checkHTMLAccessibility.js";
+import { checkPdfCompliance } from "./checkPdfCompliance.js";
+import { checkLanguage } from "./checkLanguage.js";
 
 // zarejestruj helper do inkrementacji indeksu (używany w szablonie jako {{inc @index}})
 hbs.registerHelper("inc", function (value) {
   return Number(value) + 1;
 });
 
-export async function generatePDF(templateName, data) {
+export async function generatePDF(templateName, data, options) {
+  let HTMLreport = null;
+  let language = null;
+  let pdfAccesibilityCheck = null;
   const templatePath = path.resolve(`src/templates/${templateName}.hbs`);
   const source = await fs.readFile(templatePath, "utf-8");
   const template = hbs.compile(source);
@@ -93,8 +99,17 @@ export async function generatePDF(templateName, data) {
     contentType: "Dokument dostępny cyfrowo",
     tags: ["PDF/UA", "accessible", "tagged"]
   });
+  if (options?.checkHTMLAccessibility) {
+    HTMLreport = await checkHTMLAccessibility(template, data);
+  }
+  if (options?.checkPDFAccessibility) {
+    pdfAccesibilityCheck = await checkPdfCompliance(pdfPath);
+  }
+  if (options?.checkLanguage) {
+    language = await checkLanguage(data);
+  }
+  return [pdfPath, HTMLreport, language, pdfAccesibilityCheck];
 
-  return pdfPath;
 }
 
 // nowy helper: tworzy przykładowe dane (wcześniej w /generate-test) i wywołuje generatePDF
@@ -188,6 +203,11 @@ export async function generateTestPdf() {
     description: "Szczegółowy raport o postępach projektu.",
     sections: sections
   };
+  const options = {
+    checkHTMLAccessibility: true,
+    checkLanguage: true,
+    checkPDFAccessibility: true
+  };
 
-  return await generatePDF(templateName, data);
+  return await generatePDF(templateName, data, options);
 }

@@ -13,9 +13,9 @@ export const checkPdfCompliance = (pdfPath) => {
         try {
           const json = JSON.parse(stdout);
           return resolve({
-            success: true,          // JSON z walidacji
+            success: true,          
             veraPDF: json,
-            exitCode: err ? err.code : 0, // 0 = zgodny, 1 = niezgodny
+            exitCode: err ? err.code : 0,
           });
         } catch (e) {
           return reject({
@@ -27,7 +27,6 @@ export const checkPdfCompliance = (pdfPath) => {
         }
       }
 
-      // Prawdziwy błąd — brak JSON
       return reject({
         success: false,
         error: "veraPDF execution failed",
