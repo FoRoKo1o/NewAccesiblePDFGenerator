@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import axios from "axios";
 
 export async function checkLanguage(data) {
   try {
@@ -40,20 +40,23 @@ export async function checkLanguage(data) {
 
     console.log(JSON.stringify(payload));
 
-    const resp = await fetch("https://api.logios.dev/public/calculate_measures", {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
+    const resp = await axios.post(
+      "https://api.logios.dev/public/calculate_measures",
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json" // bez dodatkowego charset
+        },
+        responseType: "json"
+      }
+    );
 
-    if (!resp.ok) {
-      const txt = await resp.text();
-      return { success: false, status: resp.status, error: txt };
-    }
-
-    const json = await resp.json();
-    return json;
+    return resp.data;
   } catch (err) {
+    if (err.response) {
+      // Błąd z odpowiedzi serwera
+      return { success: false, status: err.response.status, error: err.response.data };
+    }
     return { success: false, error: err.message || String(err) };
   }
 }
