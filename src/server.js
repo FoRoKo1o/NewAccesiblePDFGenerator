@@ -6,7 +6,6 @@ import fs from "fs";
 import path from "path";
 import { checkPdfCompliance } from "./utils/checkPdfCompliance.js";
 import { generateTestPdf } from "./utils/generatePDF.js";
-import { fixAnnotations } from "./utils/fixAnnotations.js";
 
 const app = express();
 app.use(bodyParser.json());
@@ -18,10 +17,7 @@ app.use("/check-pdf", checkPdf);
 // hardcoded PDF generation and annotation fixing
 app.get("/generate-test", async (req, res) => {
   try {
-    const [pdfPath, HTMLreport, language, pdfAccesibilityCheck] = await generateTestPdf();
-    const fixedPath = pdfPath.replace(".pdf", "_fixed.pdf");
-
-    await fixAnnotations(pdfPath, fixedPath);
+    const [fixedPath, HTMLreport, language, pdfAccesibilityCheck] = await generateTestPdf();
 
     const pdfBuffer = fs.readFileSync(fixedPath);
     const pdfBase64 = pdfBuffer.toString("base64");

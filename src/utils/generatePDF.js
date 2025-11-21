@@ -6,6 +6,7 @@ import { addMetadata } from "./addMetadata.js";
 import { checkHTMLAccessibility } from "./checkHTMLAccessibility.js";
 import { checkPdfCompliance } from "./checkPdfCompliance.js";
 import { checkLanguage } from "./checkLanguage.js";
+import { fixAnnotations } from "./utils/fixAnnotations.js";
 
 hbs.registerHelper("inc", function (value) {
   return Number(value) + 1;
@@ -22,7 +23,7 @@ export async function generatePDF(templateName, data, options) {
 
   const htmlPath = `src/output/template.html`;
   await fs.writeFile(htmlPath, html, "utf-8");
-  console.log("HTML zapisany do:", htmlPath);
+  // console.log("HTML zapisany do:", htmlPath);
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
@@ -105,17 +106,20 @@ export async function generatePDF(templateName, data, options) {
     tags: ["PDF/UA", "accessible", "tagged"]
   });
 
+  const fixedPath = pdfPath.replace(".pdf", "_fixed.pdf");
+  await fixAnnotations(pdfPath, fixedPath);
+
   if (options?.checkHTMLAccessibility) {
     HTMLreport = await checkHTMLAccessibility(templateName, data);
   }
   if (options?.checkPDFAccessibility) {
-    pdfAccesibilityCheck = await checkPdfCompliance(pdfPath);
+    pdfAccesibilityCheck = await checkPdfCompliance(fixedPath);
   }
   if (options?.checkLanguage) {
     language = await checkLanguage(data);
   }
 
-  return [pdfPath, HTMLreport, language, pdfAccesibilityCheck];
+  return [fixedPath, HTMLreport, language, pdfAccesibilityCheck];
 }
 
 export async function generateTestPdf() {
