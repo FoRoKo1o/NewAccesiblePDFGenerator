@@ -2,6 +2,7 @@ import { exec } from "child_process";
 import path from "path";
 
 export const checkPdfCompliance = (pdfPath) => {
+  console.log(`Checking PDF compliance for: ${pdfPath}`);
   return new Promise((resolve, reject) => {
     const absPath = path.resolve(pdfPath);
     const command = `/usr/local/bin/verapdf -f ua1 --format json "${absPath}"`;

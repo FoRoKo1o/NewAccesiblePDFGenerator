@@ -31,6 +31,8 @@ export async function generatePDF(templateName, data, options) {
   });
 
   const page = await browser.newPage();
+  await page.setDefaultNavigationTimeout(60000);
+  await page.setDefaultTimeout(60000);
 
   // Dodaj handler dla znaczników dostępności
   await page.evaluateOnNewDocument(() => {
@@ -100,7 +102,7 @@ export async function generatePDF(templateName, data, options) {
     tags: ["PDF/UA", "accessible", "tagged"]
   });
   if (options?.checkHTMLAccessibility) {
-    HTMLreport = await checkHTMLAccessibility(template, data);
+    HTMLreport = await checkHTMLAccessibility(templateName, data);
   }
   if (options?.checkPDFAccessibility) {
     pdfAccesibilityCheck = await checkPdfCompliance(pdfPath);
