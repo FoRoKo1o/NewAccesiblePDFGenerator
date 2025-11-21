@@ -41,6 +41,7 @@ function buildXMP(data) {
 }
 
 export async function addMetadata(pdfPath, data) {
+  console.log(`adding metadata`);
   const pdfDoc = await PDFDocument.load(await fs.readFile(pdfPath));
 
   // Basic metadata

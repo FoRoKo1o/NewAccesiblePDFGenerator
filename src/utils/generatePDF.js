@@ -27,7 +27,13 @@ export async function generatePDF(templateName, data, options) {
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--enable-pdf-tags"]
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--enable-pdf-tags"
+    ]
   });
 
   const page = await browser.newPage();
