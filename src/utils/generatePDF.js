@@ -72,52 +72,32 @@ export async function generatePDF(templateName, data, options) {
     }));
   });
 
-  try {
-    // get offsets of sections in document coordinates
-    const offsets = await page.evaluate(() => {
-      const secs = Array.from(document.querySelectorAll("main section"));
-      return secs.map(s => {
-        const rect = s.getBoundingClientRect();
-        return Math.round((rect.top + (window.scrollY || 0)) || 0);
-      });
-    });
+  // const pdfPath = `src/output/test_report.pdf`;
+  const pdfPath = `src/output/${templateName}_${Date.now()}.pdf`;
+  const pdfOptions = {
+    path: pdfPath,
+    format: "A4",
+    preferCSSPageSize: true,
+    printBackground: true,
+    displayHeaderFooter: false,
+    headerTemplate: `
+    <div style="font-size:10px; text-align:center; width:100%; padding-top:5px;">
+      <span>${data.title || "Dokument PDF"} — Strona <span class="pageNumber"></span> z <span class="totalPages"></span></span>
+    </div>`,
+    footerTemplate: `
+    <div style="font-size:10px; text-align:center; width:100%; padding-bottom:5px;">
+      <span>Wygenerowano automatycznie</span>
+    </div>`,
+    margin: {
+      top: "80px",
+      bottom: "60px",
+      left: "40px",
+      right: "40px"
+    },
+    tagged: true,
+    pdfA: true
+  };
 
-    // compute px-based PDF page size (A4 @ 96dpi ~ 1122.24px tall)
-    const DPI = 96;
-    const A4_HEIGHT_IN = 11.69;
-    const pageHeightPx = A4_HEIGHT_IN * DPI;
-
-    const marginTopPx = Number(String(pdfOptions.margin?.top || "80px").replace("px", "")) || 80;
-    const marginBottomPx = Number(String(pdfOptions.margin?.bottom || "60px").replace("px", "")) || 60;
-    const contentHeight = Math.max(1, pageHeightPx - marginTopPx - marginBottomPx);
-
-    const pageNumbers = offsets.map(y => Math.max(1, Math.floor((y - marginTopPx)/contentHeight) + 1));
-
-    // inject page numbers into TOC DOM elements
-    await page.evaluate((nums) => {
-      const nodes = Array.from(document.querySelectorAll(".TOC-PageNumber"));
-      nodes.forEach(n => {
-        const idx = Number(n.dataset.section);
-        if (!Number.isNaN(idx)) n.textContent = nums[idx] ? String(nums[idx]) : "";
-      });
-    }, pageNumbers);
-
-    try {
-      const updatedHtml = await page.content();
-      await fs.writeFile(htmlPath, updatedHtml, "utf-8");
-    } catch (e) {
-      // ignore write errors — not critical
-      console.warn("Failed to write updated HTML with TOC page numbers", e?.message || e);
-    }
-
-    // also update `data.sections` so template consumers get page numbering info
-    if (Array.isArray(data?.sections)) {
-      data.sections = data.sections.map((s, i) => ({ ...s, pageNumber: pageNumbers[i] || null }));
-    }
-  } catch (err) {
-    console.warn("Failed to compute TOC page numbers:", err?.message || err);
-  }
-  
   await page.pdf(pdfOptions);
   await browser.close();
 
@@ -139,41 +119,6 @@ export async function generatePDF(templateName, data, options) {
   }
   if (options?.checkLanguage) {
     language = await checkLanguage(data);
-  }
-
-  // compute page numbers for each <section> and inject into `data.sections`
-  try {
-    // assume A4 + 96px per inch
-    const DPI = 96;
-    const A4_HEIGHT_IN = 11.69;
-    const pageHeightPx = A4_HEIGHT_IN * DPI;
-
-    // margins in pdfOptions are strings like "80px"
-    const marginTopPx = Number(String(pdfOptions.margin?.top || "80px").replace("px", "")) || 80;
-    const marginBottomPx = Number(String(pdfOptions.margin?.bottom || "60px").replace("px", "")) || 60;
-    const contentHeight = Math.max(1, pageHeightPx - marginTopPx - marginBottomPx);
-
-    // collect vertical offsets for sections (distance from top of document)
-    const offsets = await page.evaluate(() => {
-      const secs = Array.from(document.querySelectorAll("main section"));
-      return secs.map(s => {
-        const rect = s.getBoundingClientRect();
-        // rect.top is relative to viewport — add scrollY to get document coordinate
-        return Math.round((rect.top + (window.scrollY || 0)) || 0);
-      });
-    });
-
-    // map offsets -> page numbers and attach into `data.sections`
-    if (Array.isArray(data?.sections)) {
-      data.sections = data.sections.map((s, i) => {
-        const top = offsets[i] || 0;
-        // pageNumber = 1 + floor((y - marginTop) / contentHeight)
-        const pageNumber = Math.max(1, Math.floor((top - marginTopPx) / contentHeight) + 1);
-        return { ...s, pageNumber };
-      });
-    }
-  } catch (e) {
-    console.warn("Failed to compute section page numbers:", e?.message || e);
   }
 
   return [fixedPath, HTMLreport, language, pdfAccesibilityCheck];
@@ -233,85 +178,6 @@ export async function generateTestPdf() {
           "Niezbędne jest ręczne poprawianie niektórych elementów dokumentu po wygenerowaniu PDF-a (z użyciem pythona pdf-lib)"
         ]
       },
-    },
-    {
-      heading: "Podsumowanie",
-      text: "Testowy paragraf zawierający dużą liczbę znaków specjalnych: ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ !@#$%^&*()_+-={}[]|;:'<>,.?/ ~`\\\. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed suscipit lacus orci, vel dictum sem volutpat eu. Integer et bibendum nisl. Pellentesque nec eleifend elit. Nulla nunc massa, ullamcorper nec quam id, viverra cursus mi. Donec dictum lacus in eros euismod, at dapibus augue facilisis. Nam in fermentum tortor. Quisque pharetra nunc non justo pulvinar sagittis. Fusce accumsan erat non egestas viverra. Morbi malesuada rhoncus faucibus. Nulla libero sapien, vehicula non dolor nec, ultricies tincidunt ex. Ut faucibus, nibh eget vulputate ultrices, eros leo commodo nibh, quis cursus quam justo vel libero. Nullam hendrerit neque quis dapibus molestie. Nulla lectus elit, consequat suscipit est quis, aliquet efficitur nulla. Proin eget lorem non dolor rhoncus ornare in ac turpis. Duis vel pulvinar augue, eu feugiat velit. Proin sit amet euismod sapien. In hac habitasse platea dictumst. Aliquam quis mauris in risus feugiat ultrices nec a nulla. Sed dignissim auctor velit, a egestas nibh gravida sit amet. Donec et semper elit. Maecenas orci risus, eleifend sit amet eros vitae, sodales placerat elit. Etiam sit amet nulla quis felis commodo tincidunt vitae quis erat. Pellentesque luctus mi nec massa congue blandit. Morbi mattis felis vel imperdiet rhoncus. Etiam dictum sem nec nisi volutpat, id pulvinar neque volutpat. Cras elit nisl, finibus quis dui quis, venenatis blandit ligula. Nullam aliquam tortor auctor leo consequat, commodo molestie ex convallis. Sed efficitur velit ac ipsum semper tincidunt. Sed pharetra tristique orci, id mattis dui aliquet vitae. Ut convallis erat in auctor porttitor. Praesent congue lectus ex, ut lobortis tellus pulvinar eleifend. Ut ac efficitur nibh. Mauris at neque semper, maximus velit ut, sagittis mi. Aenean quis semper urna. Curabitur ac orci non velit congue iaculis. Vestibulum mattis est nec rhoncus laoreet. Aliquam commodo, sapien facilisis convallis sodales, nibh nisi posuere ligula, ut luctus velit arcu vitae metus. Integer at purus purus. Vestibulum finibus vitae risus sed finibus. In hac habitasse platea dictumst. Phasellus odio neque, porta nec metus quis, imperdiet pharetra turpis. Suspendisse porttitor odio et est bibendum, eget ornare sapien accumsan. Phasellus varius sapien mi, eu facilisis velit scelerisque vel. Vivamus in ligula non metus congue pretium vitae vitae justo. Morbi vel ante congue, euismod orci ut, eleifend ligula. Aliquam eros mauris, tincidunt et enim id, sodales aliquam purus. Nam nec elementum dui. Sed nulla metus, ultricies vitae magna sed, aliquam lacinia magna. Fusce volutpat massa vel nibh hendrerit, sed efficitur sapien malesuada. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean ut ex diam. Maecenas lacus erat, vehicula et condimentum nec, placerat non erat. Vivamus feugiat non leo in dictum. Vestibulum non eros nunc. Duis in feugiat nulla, quis efficitur eros. Mauris sed lorem a lorem scelerisque ullamcorper sit amet nec augue."
-    },
-    {
-      heading: "Podsumowanie",
-      text: "Testowy paragraf zawierający dużą liczbę znaków specjalnych: ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ !@#$%^&*()_+-={}[]|;:'<>,.?/ ~`\\\. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed suscipit lacus orci, vel dictum sem volutpat eu. Integer et bibendum nisl. Pellentesque nec eleifend elit. Nulla nunc massa, ullamcorper nec quam id, viverra cursus mi. Donec dictum lacus in eros euismod, at dapibus augue facilisis. Nam in fermentum tortor. Quisque pharetra nunc non justo pulvinar sagittis. Fusce accumsan erat non egestas viverra. Morbi malesuada rhoncus faucibus. Nulla libero sapien, vehicula non dolor nec, ultricies tincidunt ex. Ut faucibus, nibh eget vulputate ultrices, eros leo commodo nibh, quis cursus quam justo vel libero. Nullam hendrerit neque quis dapibus molestie. Nulla lectus elit, consequat suscipit est quis, aliquet efficitur nulla. Proin eget lorem non dolor rhoncus ornare in ac turpis. Duis vel pulvinar augue, eu feugiat velit. Proin sit amet euismod sapien. In hac habitasse platea dictumst. Aliquam quis mauris in risus feugiat ultrices nec a nulla. Sed dignissim auctor velit, a egestas nibh gravida sit amet. Donec et semper elit. Maecenas orci risus, eleifend sit amet eros vitae, sodales placerat elit. Etiam sit amet nulla quis felis commodo tincidunt vitae quis erat. Pellentesque luctus mi nec massa congue blandit. Morbi mattis felis vel imperdiet rhoncus. Etiam dictum sem nec nisi volutpat, id pulvinar neque volutpat. Cras elit nisl, finibus quis dui quis, venenatis blandit ligula. Nullam aliquam tortor auctor leo consequat, commodo molestie ex convallis. Sed efficitur velit ac ipsum semper tincidunt. Sed pharetra tristique orci, id mattis dui aliquet vitae. Ut convallis erat in auctor porttitor. Praesent congue lectus ex, ut lobortis tellus pulvinar eleifend. Ut ac efficitur nibh. Mauris at neque semper, maximus velit ut, sagittis mi. Aenean quis semper urna. Curabitur ac orci non velit congue iaculis. Vestibulum mattis est nec rhoncus laoreet. Aliquam commodo, sapien facilisis convallis sodales, nibh nisi posuere ligula, ut luctus velit arcu vitae metus. Integer at purus purus. Vestibulum finibus vitae risus sed finibus. In hac habitasse platea dictumst. Phasellus odio neque, porta nec metus quis, imperdiet pharetra turpis. Suspendisse porttitor odio et est bibendum, eget ornare sapien accumsan. Phasellus varius sapien mi, eu facilisis velit scelerisque vel. Vivamus in ligula non metus congue pretium vitae vitae justo. Morbi vel ante congue, euismod orci ut, eleifend ligula. Aliquam eros mauris, tincidunt et enim id, sodales aliquam purus. Nam nec elementum dui. Sed nulla metus, ultricies vitae magna sed, aliquam lacinia magna. Fusce volutpat massa vel nibh hendrerit, sed efficitur sapien malesuada. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean ut ex diam. Maecenas lacus erat, vehicula et condimentum nec, placerat non erat. Vivamus feugiat non leo in dictum. Vestibulum non eros nunc. Duis in feugiat nulla, quis efficitur eros. Mauris sed lorem a lorem scelerisque ullamcorper sit amet nec augue."
-    },
-    {
-      heading: "test",
-      text: "test"
-    },
-    {
-      heading: "test",
-      text: "test"
-    },
-    {
-      heading: "test",
-      text: "test"
-    },
-    {
-      heading: "test",
-      text: "test"
-    },
-    {
-      heading: "Wprowadzenie",
-      text: "Celem tego raportu jest przedstawienie procesu generowania oraz weryfikacji dostępności cyfrowej dokumentów PDF.",
-      image: {
-        src: "https://ws-stats.pl/assets/icons/wsStats-icon.ico",
-        alt: "To jest przykładowy obrazek",
-        caption: "Rysunek 1. Przykładowy obrazek"
-      }
-    },
-    {
-      heading: "Tabela postępów projektu",
-      text: "Poniższa tabela prezentuje wyniki zwracana przez skanery dostępności cyfrowej.",
-      table: {
-        caption: "Tabela 1. Wyniki finansowe za Q1-Q4",
-        headers: ["ID", "Nazwa elementu", "PAC", "VERAPDF", "Uwagi"],
-        rows: [
-          ["1", "Strona tytułowa", "Zgodny", "Zgodny", "Brak uwag"],
-          ["2", "Spis treści", "Zgodny", "Zgodny", "Brak "],
-          ["3", "Nagłówki", "Zgodny", "Zgodny", "Brak"],
-          ["4", "Tabele", "Nie zgodny", "Zgodny", "błąd struktury TR - false positive?"],
-          ["5", "Obrazki", "Zgodny", "Zgodny", "BRAK"],
-          ["6", "Listy", "Zgodny", "Zgodny", "BRAK"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-          ["X", "Placeholder", "Placeholder", "Placeholder", "Placeholder"],
-        ]
-      }
-    },
-    {
-      heading: "Wnioski i rekomendacje",
-      text: "Projekt okazał się wyzwaniem, związanym z ograniczeniami narzędzi do tworzenia dokumentów.",
-      list: {
-        title: "Najważniejsze wnioski",
-        items: [
-          "Nie istnieje jedno gotowe rozwiązanie do tworzenia w pełni dostępnych PDF-ów",
-          "Każde gotowe narzędzie posiada wiele błędów zgłaszanych przez skanery dostępności cyfrowej",
-          "Aktualnie najlepszym rozwiązaniem jest generowanie PDF-ów z HTML/CSS z użyciem Puppeteer",
-          "Niezbędne jest ręczne poprawianie niektórych elementów dokumentu po wygenerowaniu PDF-a (z użyciem pythona pdf-lib)"
-        ]
-      },
-    },
-    {
-      heading: "Podsumowanie",
-      text: "Testowy paragraf zawierający dużą liczbę znaków specjalnych: ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ !@#$%^&*()_+-={}[]|;:'<>,.?/ ~`\\\. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed suscipit lacus orci, vel dictum sem volutpat eu. Integer et bibendum nisl. Pellentesque nec eleifend elit. Nulla nunc massa, ullamcorper nec quam id, viverra cursus mi. Donec dictum lacus in eros euismod, at dapibus augue facilisis. Nam in fermentum tortor. Quisque pharetra nunc non justo pulvinar sagittis. Fusce accumsan erat non egestas viverra. Morbi malesuada rhoncus faucibus. Nulla libero sapien, vehicula non dolor nec, ultricies tincidunt ex. Ut faucibus, nibh eget vulputate ultrices, eros leo commodo nibh, quis cursus quam justo vel libero. Nullam hendrerit neque quis dapibus molestie. Nulla lectus elit, consequat suscipit est quis, aliquet efficitur nulla. Proin eget lorem non dolor rhoncus ornare in ac turpis. Duis vel pulvinar augue, eu feugiat velit. Proin sit amet euismod sapien. In hac habitasse platea dictumst. Aliquam quis mauris in risus feugiat ultrices nec a nulla. Sed dignissim auctor velit, a egestas nibh gravida sit amet. Donec et semper elit. Maecenas orci risus, eleifend sit amet eros vitae, sodales placerat elit. Etiam sit amet nulla quis felis commodo tincidunt vitae quis erat. Pellentesque luctus mi nec massa congue blandit. Morbi mattis felis vel imperdiet rhoncus. Etiam dictum sem nec nisi volutpat, id pulvinar neque volutpat. Cras elit nisl, finibus quis dui quis, venenatis blandit ligula. Nullam aliquam tortor auctor leo consequat, commodo molestie ex convallis. Sed efficitur velit ac ipsum semper tincidunt. Sed pharetra tristique orci, id mattis dui aliquet vitae. Ut convallis erat in auctor porttitor. Praesent congue lectus ex, ut lobortis tellus pulvinar eleifend. Ut ac efficitur nibh. Mauris at neque semper, maximus velit ut, sagittis mi. Aenean quis semper urna. Curabitur ac orci non velit congue iaculis. Vestibulum mattis est nec rhoncus laoreet. Aliquam commodo, sapien facilisis convallis sodales, nibh nisi posuere ligula, ut luctus velit arcu vitae metus. Integer at purus purus. Vestibulum finibus vitae risus sed finibus. In hac habitasse platea dictumst. Phasellus odio neque, porta nec metus quis, imperdiet pharetra turpis. Suspendisse porttitor odio et est bibendum, eget ornare sapien accumsan. Phasellus varius sapien mi, eu facilisis velit scelerisque vel. Vivamus in ligula non metus congue pretium vitae vitae justo. Morbi vel ante congue, euismod orci ut, eleifend ligula. Aliquam eros mauris, tincidunt et enim id, sodales aliquam purus. Nam nec elementum dui. Sed nulla metus, ultricies vitae magna sed, aliquam lacinia magna. Fusce volutpat massa vel nibh hendrerit, sed efficitur sapien malesuada. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean ut ex diam. Maecenas lacus erat, vehicula et condimentum nec, placerat non erat. Vivamus feugiat non leo in dictum. Vestibulum non eros nunc. Duis in feugiat nulla, quis efficitur eros. Mauris sed lorem a lorem scelerisque ullamcorper sit amet nec augue."
     },
     {
       heading: "Podsumowanie",
