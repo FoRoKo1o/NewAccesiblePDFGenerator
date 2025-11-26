@@ -121,6 +121,41 @@ export async function generatePDF(templateName, data, options) {
     language = await checkLanguage(data);
   }
 
+  // compute page numbers for each <section> and inject into `data.sections`
+  try {
+    // assume A4 + 96px per inch
+    const DPI = 96;
+    const A4_HEIGHT_IN = 11.69;
+    const pageHeightPx = A4_HEIGHT_IN * DPI;
+
+    // margins in pdfOptions are strings like "80px"
+    const marginTopPx = Number(String(pdfOptions.margin?.top || "80px").replace("px", "")) || 80;
+    const marginBottomPx = Number(String(pdfOptions.margin?.bottom || "60px").replace("px", "")) || 60;
+    const contentHeight = Math.max(1, pageHeightPx - marginTopPx - marginBottomPx);
+
+    // collect vertical offsets for sections (distance from top of document)
+    const offsets = await page.evaluate(() => {
+      const secs = Array.from(document.querySelectorAll("main section"));
+      return secs.map(s => {
+        const rect = s.getBoundingClientRect();
+        // rect.top is relative to viewport — add scrollY to get document coordinate
+        return Math.round((rect.top + (window.scrollY || 0)) || 0);
+      });
+    });
+
+    // map offsets -> page numbers and attach into `data.sections`
+    if (Array.isArray(data?.sections)) {
+      data.sections = data.sections.map((s, i) => {
+        const top = offsets[i] || 0;
+        // pageNumber = 1 + floor((y - marginTop) / contentHeight)
+        const pageNumber = Math.max(1, Math.floor((top - marginTopPx) / contentHeight) + 1);
+        return { ...s, pageNumber };
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to compute section page numbers:", e?.message || e);
+  }
+
   return [fixedPath, HTMLreport, language, pdfAccesibilityCheck];
 }
 
