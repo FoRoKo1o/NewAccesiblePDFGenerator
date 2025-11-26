@@ -205,21 +205,16 @@
         <h2 -webkit-pdf-tag-type="H2">Spis Treści</h2>
 
         <div style="display:flex; flex-direction:column; gap:4px;">
-            {{#each sections}}
+             {{#each sections}}
             <p -webkit-pdf-tag-type="P" style="margin:0; padding:0;">
-                <!--
-        - title => pomaga wstawieniu Contents w anotacji
-        - aria-label => zapewnia Alt w strukturze, zależnie od generatora
-        - -webkit-pdf-tag-type="Link" => wymusza utworzenie strukturalnego elementu Link
-      -->
                 <a href="#section-{{@index}}" title="Przejdź do sekcji: {{heading}}"
                     aria-label="Przejdź do sekcji: {{heading}}" -webkit-pdf-tag-type="Link"
                     style="text-decoration:none; color:#2c3e50; display:inline-block; width:calc(100% - 40px);">
                     {{heading}}
                 </a>
 
-                <!-- numer strony jako oddzielny element (nie artefakt) -->
-                <span style="float:right; width:40px; text-align:right; display:inline-block;">{{pageNumber}}</span>
+                <!-- numer strony jako oddzielny element (uzupełniany dynamicznie) -->
+                <span class="TOC-PageNumber" data-section="{{@index}}" style="float:right; width:40px; text-align:right; display:inline-block;">{{pageNumber}}</span>
             </p>
             {{/each}}
         </div>
